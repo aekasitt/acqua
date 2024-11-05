@@ -2,7 +2,7 @@
 # coding:utf-8
 # Copyright (C) 2024 All rights reserved.
 # FILENAME:    ~~/src/acqua/types/service.py
-# VERSION:     0.1.0
+# VERSION:     0.1.1
 # CREATED:     2024-10-24 14:29
 # AUTHOR:      Sitt Guruvanich <aekasitt.g+github@siamintech.co.th>
 # DESCRIPTION:
