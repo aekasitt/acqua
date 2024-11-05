@@ -96,10 +96,10 @@
     y='12rem'
     >
     <tspan dy='0' x='20rem'>
-      Relays of Bitcoin sidechain nodes such as
+      One command deployment for SUI network node
     </tspan>
     <tspan dy='1.6rem' x='16rem'>
-      SUI manageable on Terminal User Interface (TUI)
+      manageable on Terminal User Interface (TUI)
     </tspan>
   </text>
 </svg>
