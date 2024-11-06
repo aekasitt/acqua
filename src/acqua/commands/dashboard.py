@@ -37,8 +37,9 @@ def dashboard() -> None:
     rich_print("[red bold]Unable to connect to daemon.")
     return
 
+  daemon: Container
   try:
-    next(
+    daemon = next(
       filter(
         lambda container: match(r"acqua-(sui|sui-devnet|sui-testnet)", container.name),
         reversed(client.containers.list()),
@@ -59,6 +60,7 @@ def dashboard() -> None:
     containers=acqua_containers,
     container_index=0,
     container_names=container_names,
+    daemon=daemon,
   )
   lagoon.display()
 

@@ -11,13 +11,15 @@
 # *************************************************************
 
 ### Standard packages ###
-from typing import ClassVar, List
+from json import dumps
+from re import Match, search
+from typing import ClassVar, List, Optional
 
 ### Third-party packages ###
 from blessed import Terminal
 from blessed.keyboard import Keystroke
 from docker.models.containers import Container
-from pydantic import BaseModel, ConfigDict, StrictInt, StrictStr
+from pydantic import BaseModel, ConfigDict, StrictInt, StrictStr, TypeAdapter
 from rich.layout import Layout
 from rich.live import Live
 from rich.panel import Panel
@@ -26,6 +28,7 @@ from rich.text import Text
 
 ### Local modules ###
 from acqua.inlets.estuary import Estuary
+from acqua.types import JsonrpcResponse
 
 
 class Lagoon(BaseModel):
@@ -33,6 +36,7 @@ class Lagoon(BaseModel):
   container_index: StrictInt = 0
   container_names: List[StrictStr] = []
   containers: List[Container] = []
+  daemon: Container
 
   ### Split layouts ###
   body: ClassVar[Layout] = Layout(name="body", minimum_size=4, ratio=8, size=17)
@@ -74,14 +78,55 @@ class Lagoon(BaseModel):
             container_rows = "\n".join(self.container_names[: self.container_index])
             container_rows += f"\n[reverse]{self.container_names[self.container_index]}[reset]\n"
           else:
-            ...
+            container_rows = f"[reverse]{self.container_names[self.container_index]}[reset]\n"
           if self.container_index < len(self.container_names) - 1:
             container_rows += "\n".join(self.container_names[self.container_index + 1 :])
-          self.pane["straits"].update(Panel(container_rows, title="straits"))
+          self.pane["straits"].update(Panel(container_rows, title="domains"))
+          container_name: str = self.container_names[self.container_index]
 
           body_table: Table = Table(expand=True, show_lines=True)
           body_table.add_column(container_name, "dark_sea_green bold")
-          body_table.add_row(self.estuary.renderable)
+          network: Optional[Match] = search(
+            r"(?<=acqua)-(sui|sui-devnet|sui-testnet)", container_name
+          )
+          if network:
+            data: dict = {
+              "id": "chain-id",
+              "jsonrpc": "2.0",
+              "method": "sui_getTotalTransactionBlocks",
+              "params": [],
+            }
+            chain_identifier: JsonrpcResponse = TypeAdapter(JsonrpcResponse).validate_json(
+              self.daemon.exec_run(
+                f"""
+                curl -sSL "http://localhost:9000" -H "Content-Type: application/json" -X POST --data-raw '{dumps(data)}'
+                """
+              ).output
+            )
+            data["method"] = "suix_getReferenceGasPrice"
+            reference_gas_price: JsonrpcResponse = TypeAdapter(JsonrpcResponse).validate_json(
+              self.daemon.exec_run(
+                f"""
+                curl -sSL "http://localhost:9000" -H "Content-Type: application/json" -X POST --data-raw '{dumps(data)}'
+                """
+              ).output
+            )
+            body_table.add_row(
+              Text.assemble(
+                "\n",
+                ("Chain", "bold"),
+                "\n".ljust(15),
+                ("Chain Identifier:".ljust(24), "green bold"),
+                f"{chain_identifier.result}".rjust(16),
+                "\n".ljust(15),
+                ("Reference Gas Price:".ljust(24), "cyan bold"),
+                f"{reference_gas_price.result}".rjust(16),
+                "\n",
+              )
+            )
+          else:
+            body_table.add_row(self.estuary.renderable)
+
           self.pane["body"].update(body_table)
 
           self.pane["footer"].update(
