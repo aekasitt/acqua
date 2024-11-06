@@ -17,7 +17,9 @@ from typing import Dict, List, Set
 from click import command, option
 from docker import DockerClient, from_env
 from docker.errors import DockerException
+from docker.models.images import Image
 from rich import print as rich_print
+from rich.progress import track
 
 ### Local modules ###
 from acqua.configs import BUILDS
@@ -73,14 +75,15 @@ def pull(
   list(map(rich_print, outputs))
 
   pullables: List[str] = [
-    f"ghcr.io/aekasitt/{ tag }:latest"
-    for tag in BUILDS.keys()
-    if pull_select[tag] and tag not in image_names
+    tag for tag in BUILDS.keys() if pull_select[tag] and tag not in image_names
   ]
   pull_count: int = len(pullables)
   if pull_count != 0:
-    for pullable in pullables:
-      client.images.pull(pullable)
+    for pullable in track(pullables, "Pulling images from ghcr.io".ljust(35)):
+      client.images.pull(f"ghcr.io/aekasitt/{ pullable }:latest")
+      image: Image = client.images.get(f"ghcr.io/aekasitt/{ pullable }:latest")
+      image.tag(pullable)
+
 
 
 __all__ = ("pull",)
