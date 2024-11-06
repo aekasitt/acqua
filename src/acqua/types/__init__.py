@@ -15,6 +15,7 @@ from acqua.types.blockchain_info import BlockchainInfo
 from acqua.types.build import Build, BuildEnum
 from acqua.types.chain import Chain
 from acqua.types.difficulty_adjustment import DifficultyAdjustment
+from acqua.types.jsonrpc_response import JsonrpcResponse
 from acqua.types.mempool_info import MempoolInfo
 from acqua.types.service import Service, ServiceName
 
