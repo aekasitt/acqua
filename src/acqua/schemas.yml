@@ -10,8 +10,10 @@ builds:
       6: RUN cargo install --locked --git https://github.com/MystenLabs/sui.git --branch mainnet sui
       7: FROM debian:stable-slim AS runner
       8: WORKDIR /usr/app
-      9: COPY --from=builder /root/.cargo/bin/sui /usr/app/sui
-      10: ENTRYPOINT ["/usr/app/sui"]
+      9: RUN apt-get update
+      10: RUN apt-get install -y curl
+      11: COPY --from=builder /root/.cargo/bin/sui /usr/app/sui
+      12: ENTRYPOINT ["/usr/app/sui"]
   acqua-sui-devnet:
     instructions:
       <<: *baseInstructions
