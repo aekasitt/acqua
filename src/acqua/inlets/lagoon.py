@@ -11,9 +11,10 @@
 # *************************************************************
 
 ### Standard packages ###
+from functools import reduce
 from json import dumps
 from re import Match, search
-from typing import ClassVar, List, Optional
+from typing import ClassVar, Dict, List, Optional
 
 ### Third-party packages ###
 from blessed import Terminal
@@ -28,7 +29,7 @@ from rich.text import Text
 
 ### Local modules ###
 from acqua.inlets.estuary import Estuary
-from acqua.types import JsonrpcResponse
+from acqua.types import JsonrpcResponse, Validator
 
 
 class Lagoon(BaseModel):
@@ -96,7 +97,9 @@ class Lagoon(BaseModel):
               "method": "sui_getTotalTransactionBlocks",
               "params": [],
             }
-            chain_identifier: JsonrpcResponse = TypeAdapter(JsonrpcResponse).validate_json(
+            chain_identifier: JsonrpcResponse[str] = TypeAdapter(
+              JsonrpcResponse[str]
+            ).validate_json(
               self.daemon.exec_run(
                 f"""
                 curl -sSL "http://localhost:9000" -H "Content-Type: application/json" -X POST --data-raw '{dumps(data)}'
@@ -104,12 +107,27 @@ class Lagoon(BaseModel):
               ).output
             )
             data["method"] = "suix_getReferenceGasPrice"
-            reference_gas_price: JsonrpcResponse = TypeAdapter(JsonrpcResponse).validate_json(
+            reference_gas_price: JsonrpcResponse[str] = TypeAdapter(
+              JsonrpcResponse[str]
+            ).validate_json(
               self.daemon.exec_run(
                 f"""
                 curl -sSL "http://localhost:9000" -H "Content-Type: application/json" -X POST --data-raw '{dumps(data)}'
                 """
               ).output
+            )
+            data["method"] = "suix_getValidatorsApy"
+            validators_apy: JsonrpcResponse[Validator] = TypeAdapter(
+              JsonrpcResponse[Validator]
+            ).validate_json(
+              self.daemon.exec_run(
+                f"""
+                curl -sSL "http://localhost:9000" -H "Content-Type: application/json" -X POST --data-raw '{dumps(data)}'
+                """
+              ).output
+            )
+            average_apy: float = reduce(
+              lambda accumulated, validator_apy: accumulated + validator_apy.apy, validators_apy.result.apys, 0.0
             )
             body_table.add_row(
               Text.assemble(
@@ -121,6 +139,9 @@ class Lagoon(BaseModel):
                 "\n".ljust(15),
                 ("Reference Gas Price:".ljust(24), "cyan bold"),
                 f"{reference_gas_price.result}".rjust(16),
+                "\n".ljust(15),
+                ("Average Validators APY:".ljust(24), "light_coral bold"),
+                f"{average_apy}".rjust(16),
                 "\n",
               )
             )

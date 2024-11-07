@@ -18,6 +18,7 @@ from acqua.types.difficulty_adjustment import DifficultyAdjustment
 from acqua.types.jsonrpc_response import JsonrpcResponse
 from acqua.types.mempool_info import MempoolInfo
 from acqua.types.service import Service, ServiceName
+from acqua.types.validator import Validator
 
 
 __all__ = (
@@ -26,7 +27,9 @@ __all__ = (
   "BuildEnum",
   "Chain",
   "DifficultyAdjustment",
+  "JsonrpcResponse",
   "MempoolInfo",
   "Service",
   "ServiceName",
+  "Validator",
 )

@@ -11,16 +11,19 @@
 # *************************************************************
 
 ### Standard packages ###
-from typing import Literal
+from typing import Generic, Literal, TypeVar
 
 ### Third-party packages ###
 from pydantic import BaseModel, StrictInt, StrictStr
 
 
-class JsonrpcResponse(BaseModel):
+T = TypeVar("T")
+
+
+class JsonrpcResponse(BaseModel, Generic[T]):
   jsonrpc: Literal["2.0"]
   id: StrictInt | StrictStr
-  result: StrictStr
+  result: T
 
 
 __all__ = ("JsonrpcResponse",)
