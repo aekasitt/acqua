@@ -85,6 +85,7 @@ class Lagoon(BaseModel):
           self.pane["straits"].update(Panel(container_rows, title="domains"))
           container_name: str = self.container_names[self.container_index]
 
+          ### Body ###
           body_table: Table = Table(expand=True, show_lines=True)
           body_table.add_column(container_name, "dark_sea_green bold")
           network: Optional[Match] = search(
@@ -147,9 +148,9 @@ class Lagoon(BaseModel):
             )
           else:
             body_table.add_row(self.estuary.renderable)
-
           self.pane["body"].update(body_table)
 
+          ### Footer ###
           self.pane["footer"].update(
             Panel(
               Text.assemble(
