@@ -43,7 +43,10 @@ def clean(inactive: bool) -> None:
   outputs: List[str] = []
   containers: List[Container] = client.containers.list(all=inactive)
   for container in track(containers, f"Clean {('active','all')[inactive]} containers:".ljust(42)):
-    if match(r"acqua-*", container.name) is not None:
+    container_name: None | str = container.name
+    if container_name is None:
+      continue
+    if match(r"acqua-*", container_name) is not None:
       container.stop()
       container.remove(v=True)  # if `v` is true, remove associated volume
       outputs.append(f"<Container '{ container.name }'> removed.")
