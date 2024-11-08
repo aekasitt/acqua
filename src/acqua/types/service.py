@@ -25,7 +25,7 @@ class Service(BaseModel):
   env_vars: List[StrictStr] = []
   image: StrictStr
   ports: List[PortMapping]
-  service_type: Literal["node", "peripheral"] = Field(alias="type")
+  service_type: Literal["middleware", "node"] = Field(alias="type")
 
 
 ServiceName = Literal["acqua-postgres", "acqua-sui", "acqua-sui-devnet", "acqua-sui-testnet"]

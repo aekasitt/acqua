@@ -29,12 +29,10 @@ from acqua.types import Chain, Service, ServiceName
 @option("--devnet", cls=Chain, is_flag=True, type=bool, variants=("mainnet", "testnet"))
 @option("--mainnet", cls=Chain, is_flag=True, type=bool, variants=("devnet", "testnet"))
 @option("--testnet", cls=Chain, is_flag=True, type=bool, variants=("devnet", "mainnet"))
-@option("--with-postgres", is_flag=True, help="Deploy postgres peripheral service", type=bool)
 def deploy(
   devnet: bool,
   mainnet: bool,
   testnet: bool,
-  with_postgres: bool,
 ) -> None:
   """Deploy cluster."""
   client: DockerClient
@@ -46,57 +44,62 @@ def deploy(
     rich_print("[red bold]Unable to connect to docker daemon.")
     return
 
-  network_select: Dict[ServiceName, bool] = {
+  ### Setup Node Network ###
+  node_selector: Dict[ServiceName, bool] = {
     "acqua-sui": mainnet,
     "acqua-sui-devnet": devnet,
     "acqua-sui-testnet": testnet,
   }
-  daemon_name: ServiceName = "acqua-sui"
+  node_name: ServiceName = "acqua-sui"
   try:
-    daemon_name = next(filter(lambda value: value[1], network_select.items()))[0]
+    node_name = next(filter(lambda value: value[1], node_selector.items()))[0]
   except StopIteration:
     pass
-  daemon: Service = SERVICES[daemon_name]
 
+  ### Setup Cluster Network ###
   try:
     client.networks.create(NETWORK, check_duplicate=True)
   except APIError:
     pass
 
-  for _ in track(range(1), f"Deploy { daemon_name }".ljust(42)):
-    flags: List[str] = list(daemon.command.values())
-    ports: Dict[str, int] = {port.split(":")[0]: int(port.split(":")[1]) for port in daemon.ports}
-    client.containers.run(
-      daemon.image,
-      command=flags,
-      detach=True,
-      environment=daemon.env_vars,
-      name=daemon_name,
-      network=NETWORK,
-      ports=ports,  # type: ignore
-    )
-
-  peripheral_selector = {"acqua-postgres": with_postgres}
-  peripherals: Dict[ServiceName, Service] = {
+  ### Launch middlewares ###
+  middleware_selector = {"acqua-postgres": True}
+  middlewares: Dict[ServiceName, Service] = {
     key: value
     for key, value in SERVICES.items()
-    if value.service_type == "peripheral"
-    if peripheral_selector[key]
+    if value.service_type == "middleware"
+    if middleware_selector[key]
   }
-  for name, peripheral in track(peripherals.items(), f"Deploy peripheral services".ljust(42)):
-    flags: List[str] = list(peripheral.command.values())
-    environment: List[str] = peripheral.env_vars
-    ports: Dict[str, int] = {p.split(":")[0]: int(p.split(":")[1]) for p in peripheral.ports}
+  for name, middleware in track(middlewares.items(), f"Deploy middleware services".ljust(42)):
+    flags: List[str] = list(middleware.command.values())
+    environment: List[str] = middleware.env_vars
+    ports: Dict[str, int] = {p.split(":")[0]: int(p.split(":")[1]) for p in middleware.ports}
     client.containers.run(
-      peripheral.image,
+      middleware.image,
       command=flags,
       detach=True,
       environment=environment,
       name=name,
       network=NETWORK,
       ports=ports,  # type: ignore
-      volumes_from=[daemon_name],
     )
+
+
+  ### Launch Node Daemon ###
+  node: Service = SERVICES[node_name]
+  for _ in track(range(1), f"Deploy { node_name }".ljust(42)):
+    flags: List[str] = list(node.command.values())
+    ports: Dict[str, int] = {port.split(":")[0]: int(port.split(":")[1]) for port in node.ports}
+    client.containers.run(
+      node.image,
+      command=flags,
+      detach=True,
+      environment=node.env_vars,
+      name=node_name,
+      network=NETWORK,
+      ports=ports,  # type: ignore
+    )
+
 
 
 __all__ = ("deploy",)

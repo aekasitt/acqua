@@ -32,7 +32,7 @@ services:
     image: postgres:latest
     ports:
       - 5432:5432
-    type: peripheral
+    type: middleware
   acqua-sui:
     command: &baseCommand
       0: start
