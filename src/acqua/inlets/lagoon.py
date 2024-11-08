@@ -107,6 +107,14 @@ class Lagoon(BaseModel):
                 """
               ).output
             )
+            data["method"] = "sui_getLatestCheckpointSequenceNumber"
+            latest_checkpoint: JsonrpcResponse[int] = TypeAdapter(JsonrpcResponse[int]).validate_json(
+              self.daemon.exec_run(
+                f"""
+                curl -sSL "http://localhost:9000" -H "Content-Type: application/json" -X POST --data-raw '{dumps(data)}'
+                """
+              ).output
+            )
             data["method"] = "suix_getReferenceGasPrice"
             reference_gas_price: JsonrpcResponse[str] = TypeAdapter(
               JsonrpcResponse[str]
@@ -137,6 +145,9 @@ class Lagoon(BaseModel):
                 "\n".ljust(15),
                 ("Chain Identifier:".ljust(24), "green bold"),
                 f"{chain_identifier.result}".rjust(16),
+                "\n".ljust(15),
+                ("Latest Checkpoint:".ljust(24), "bright_magenta bold"),
+                f"{latest_checkpoint.result}".rjust(16),
                 "\n".ljust(15),
                 ("Reference Gas Price:".ljust(24), "cyan bold"),
                 f"{reference_gas_price.result}".rjust(16),
