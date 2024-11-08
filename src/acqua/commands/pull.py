@@ -74,6 +74,7 @@ def pull(
   outputs += map(lambda tag: f"<Image: '{tag}'> already exists in local docker images.", built)
   list(map(rich_print, outputs))
 
+  outputs = []
   pullables: List[str] = [
     tag for tag in BUILDS.keys() if pull_select[tag] and tag not in image_names
   ]
@@ -83,6 +84,8 @@ def pull(
       client.images.pull(f"ghcr.io/aekasitt/{ pullable }:latest")
       image: Image = client.images.get(f"ghcr.io/aekasitt/{ pullable }:latest")
       image.tag(pullable)
+      outputs.append(f"<Image '{ pullable }'> pulled from registry.")
+  list(map(rich_print, outputs))
 
 
 __all__ = ("pull",)
