@@ -42,7 +42,7 @@ dependencies = [
   'rich>=13.7.0',
 ]
 description = ''
-homepage = 'https://github.com/krutt/acqua'
+homepage = 'https://github.com/aekasitt/acqua'
 include = [
   {path='src/acqua/fullnode.yml', format=['sdist', 'wheel']},
   {path='src/acqua/schemas.yml', format=['sdist', 'wheel']}
@@ -51,7 +51,7 @@ keywords = ['anonymous', 'bitcoin', 'cli', 'lightning', 'terminal', 'tui', 'ui',
 license = 'MIT'
 name = 'acqua'
 readme = 'README.md'
-repository = 'https://github.com/krutt/acqua'
+repository = 'https://github.com/aekasitt/acqua'
 requires-python = '>=3.9'
 version = '0.1.3'
 
