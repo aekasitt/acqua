@@ -44,7 +44,8 @@ dependencies = [
 description = ''
 homepage = 'https://github.com/krutt/acqua'
 include = [
-  {path='src/aesir/schemas.yml', format=['sdist', 'wheel']}
+  {path='src/acqua/fullnode.yml', format=['sdist', 'wheel']},
+  {path='src/acqua/schemas.yml', format=['sdist', 'wheel']}
 ]
 keywords = ['anonymous', 'bitcoin', 'cli', 'lightning', 'terminal', 'tui', 'ui', 'user-interface']
 license = 'MIT'

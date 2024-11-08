@@ -11,17 +11,23 @@
 # *************************************************************
 
 ### Standard packages ###
+from io import BytesIO
+from re import match
+from time import sleep
+from tarfile import TarInfo, open as open_tarfile
 from typing import Dict, List
 
 ### Third-party packages ###
 from click import command, option
 from docker import DockerClient, from_env
 from docker.errors import APIError, DockerException
+from docker.models.containers import Container
 from rich import print as rich_print
 from rich.progress import track
+from yaml import dump
 
 ### Local modules ###
-from acqua.configs import NETWORK, SERVICES
+from acqua.configs import FULLNODES, NETWORK, SERVICES
 from acqua.types import Chain, Service, ServiceName
 
 
@@ -84,7 +90,6 @@ def deploy(
       ports=ports,  # type: ignore
     )
 
-
   ### Launch Node Daemon ###
   node: Service = SERVICES[node_name]
   for _ in track(range(1), f"Deploy { node_name }".ljust(42)):
@@ -100,6 +105,27 @@ def deploy(
       ports=ports,  # type: ignore
     )
 
+  ### Setup node peers ###
+  daemon: Container
+  try:
+    daemon = next(
+      filter(lambda acqua: match(r"acqua-(sui|sui-testnet)", acqua.name), client.containers.list())
+    )
+  except StopIteration:
+    return
+  sleep(3)  # delay until node running and fullnode.yaml generated
+  extension_selector: str = ("mainnet", "testnet")[daemon.name == "acqua-sui-testnet"]
+  extension: bytes = dump(FULLNODES[extension_selector].model_dump(by_alias=True)).encode("utf-8")
+  fullnode_archive, stat = daemon.get_archive("/root/.sui/sui_config/fullnode.yaml")
+  new_fullnode: BytesIO = BytesIO()
+  with open_tarfile(fileobj=new_fullnode, mode="w|") as tar_file:
+    content: bytes = b"".join([chunk for chunk in fullnode_archive])
+    content += extension
+    tar_info: TarInfo = TarInfo("fullnode.yaml")
+    tar_info.size = stat.get("size", 0) + len(extension)
+    tar_file.addfile(tar_info, BytesIO(content))
+  new_fullnode.seek(0)
+  daemon.put_archive(data=new_fullnode, path="/root/.sui/sui_config")
 
 
 __all__ = ("deploy",)

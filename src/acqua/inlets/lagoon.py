@@ -108,7 +108,9 @@ class Lagoon(BaseModel):
               ).output
             )
             data["method"] = "sui_getLatestCheckpointSequenceNumber"
-            latest_checkpoint: JsonrpcResponse[int] = TypeAdapter(JsonrpcResponse[int]).validate_json(
+            latest_checkpoint: JsonrpcResponse[int] = TypeAdapter(
+              JsonrpcResponse[int]
+            ).validate_json(
               self.daemon.exec_run(
                 f"""
                 curl -sSL "http://localhost:9000" -H "Content-Type: application/json" -X POST --data-raw '{dumps(data)}'
@@ -136,7 +138,9 @@ class Lagoon(BaseModel):
               ).output
             )
             average_apy: float = reduce(
-              lambda accumulated, validator_apy: accumulated + validator_apy.apy, validators_apy.result.apys, 0.0
+              lambda accumulated, validator_apy: accumulated + validator_apy.apy,
+              validators_apy.result.apys,
+              0.0,
             )
             body_table.add_row(
               Text.assemble(

@@ -21,6 +21,7 @@ class Apy(BaseModel):
   address: StrictStr
   apy: StrictFloat
 
+
 class Validator(BaseModel):
   apys: List[Apy]
   epoch: str
