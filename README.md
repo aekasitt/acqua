@@ -26,23 +26,26 @@ And build required images with `build` command. The following shows you how to b
 Sui Validator node with one-command.
 
 ```sh
-acqua build --mainnet
+acqua pull --mainnet
 ```
 
 <details>
-  <summary> Sample output when running build command </summary>
+  <summary> Sample output when running pull command </summary>
 
-![Sample Acqua Build](https://github.com/aekasitt/acqua/blob/master/static/acqua-build.gif)
+![Sample Acqua Build](https://github.com/aekasitt/acqua/blob/master/static/acqua-pull.gif)
 
 </details>
 
-The initial build may take some time as it is downloading source codes from different repositories
-and interfacing with `Docker Daemon` to build according to flagged requirements. Once the build process
-completes, you can begin deploying local network with peripherals as such:
+The initial pull may take some time as it is downloading source codes from different repositories
+and interfacing with `Docker Daemon` to build according to flagged requirements. Once the pull
+process completes, you can begin deploying local network with middlewares as such:
 
 ```sh
-acqua deploy --mainnet --with-postgres
+acqua deploy --mainnet
 ```
+
+Note: If you do not have `postgres:latest` image in your local Docker image registry, this may
+take some time to deploy on your first run.
 
 <details>
 <summary>Sample output when running deploy command</summary>
