@@ -52,7 +52,7 @@ name = 'acqua'
 readme = 'README.md'
 repository = 'https://github.com/krutt/acqua'
 requires-python = '>=3.9'
-version = '0.1.1'
+version = '0.1.2'
 
 
 [project.scripts]

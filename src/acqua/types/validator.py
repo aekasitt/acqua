@@ -2,7 +2,7 @@
 # coding:utf-8
 # Copyright (C) 2024 All rights reserved.
 # FILENAME:    ~~/src/acqua/types/validator.py
-# VERSION:     0.1.1
+# VERSION:     0.1.2
 # CREATED:     2024-11-07 14:00
 # AUTHOR:      Sitt Guruvanich <aekasitt.g+github@siamintech.co.th>
 # DESCRIPTION:
